@@ -4,6 +4,7 @@
     "python.linting.enabled": true,
     "files.associations": {
         "wiringpi.h": "c",
-        "pigpio.h": "c"
+        "pigpio.h": "c",
+        "stdio.h": "c"
     }
 }
