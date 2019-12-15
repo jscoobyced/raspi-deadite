@@ -2,17 +2,13 @@
 #include "controller.h"
 
 void position1(int channel) {
-    setPositionWithSpeed(channel, 7000, 100);
-    while (getPosition(channel) < 6900)
-    {
-    }
+    setAngle(channel, 0, 100);
+    sleep(1);
 }
 
 void position2(int channel) {
-    setPositionWithSpeed(channel, 1000, 100);
-    while (getPosition(channel) > 1100)
-    {
-    }
+    setAngle(channel, 180, 100);
+    sleep(1);
 }
 
 int main(int argc, char *argv[])
@@ -23,6 +19,7 @@ int main(int argc, char *argv[])
     }
     // Enable all channels
     enableDisableChannel(0, 1);
+    initChannel(3, 0);
     position2(2);
     position1(2);
     position2(1);

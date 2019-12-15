@@ -3,6 +3,10 @@
 #include <fcntl.h>
 #include <termios.h>
 
+// Standard servos pulse width
+#define MIN_ANGLE 500
+#define MAX_ANGLE 2500
+
 int uart0_filestream = -1;
 
 int startUart()
@@ -92,6 +96,16 @@ unsigned int getPosition(unsigned char channel)
     position = position | (low_position & 0x3F);
 
     return position;
+}
+
+void setAngle(unsigned char channel, int angle, unsigned char speed)
+{
+    if (angle < -90 || angle > 90)
+    {
+        return;
+    }
+    unsigned int value = MIN_ANGLE + (((angle + 90) * (MAX_ANGLE - MIN_ANGLE)) / 180);
+    setPositionWithSpeed(channel, value, speed);
 }
 
 void enableDisableChannel(unsigned char channel, unsigned char on_off)
