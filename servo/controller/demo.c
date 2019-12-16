@@ -5,11 +5,19 @@
 
 int speed = 100;
 
-unsigned int doMove(int channel)
+
+void wait(unsigned char channel, unsigned int position)
 {
-    setAngle(channel, 0, speed);
-    setAngle(channel, -90, speed);
-    return setAngle(channel, 90, speed);
+    if (position != -1)
+    {
+        waitForChannelAndPosition(channel, position);
+    }
+}
+
+void doMove(int angle)
+{
+    setAngle(1, angle, speed);
+    wait(2, setAngle(2, angle, speed));
 }
 
 int main(int argc, char *argv[])
@@ -24,13 +32,9 @@ int main(int argc, char *argv[])
         return 0;
     }
     enableDisableChannel(0, 1);
-    doMove(1);
-    unsigned int position = doMove(2);
-    if (position != -1)
-    {
-        waitForChannelAndPosition(2, position);
-    }
-
+    doMove(0);
+    doMove(-90);
+    doMove(90);
     enableDisableChannel(0, 0);
     closeUart();
     return 0;
