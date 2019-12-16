@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
         return 0;
     }
     char *endptr;
-    int speed = strtol(argv[1], &endptr, 10);
+    int speed = strtol(argv[2], &endptr, 10);
     if(speed == 0) {
         speed = 100;
     }

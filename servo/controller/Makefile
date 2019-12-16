@@ -26,4 +26,4 @@ clean:
 	rm -Rf ./bin
 
 run:
-	LD_LIBRARY_PATH=$(BIN)/shared $(BIN)/demo "/dev/serial0"
+	LD_LIBRARY_PATH=$(BIN)/shared $(BIN)/demo "/dev/serial0" 0
