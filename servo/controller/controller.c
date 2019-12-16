@@ -33,26 +33,30 @@ unsigned int getPosition(unsigned char channel)
     return position;
 }
 
-void setAngle(unsigned char channel, int angle, unsigned char speed)
+unsigned int setAngle(unsigned char channel, int angle, unsigned char speed)
 {
     if (angle < -90 || angle > 90)
     {
-        return;
+        return -1;
     }
 
-    unsigned int value = (angle + 90) * (MAX_ANGLE - MIN_ANGLE) / 180;
-    setPositionWithSpeed(channel, value, speed);
-    int current = 1000;
-    unsigned int position;
+    unsigned int position = (angle + 90) * (MAX_ANGLE - MIN_ANGLE) / 180;
+    setPositionWithSpeed(channel, position, speed);
+
+    return position;
+}
+
+void waitForChannelAndPosition(unsigned char channel, unsigned int position)
+{
+    unsigned current = 100;
     while (current > 10)
     {
-        usleep(200000);
-        position = getPosition(channel);
-        current = value - position;
+        current = position - getPosition(channel);
         if (current < 0)
         {
             current = -current;
         }
+        usleep(200000);
     }
 }
 
