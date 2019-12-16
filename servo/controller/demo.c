@@ -1,30 +1,31 @@
 #include <unistd.h>
+#include <stdio.h>
+#include "uart.h"
 #include "controller.h"
 
-void position1(int channel) {
-    setAngle(channel, 0, 100);
-    sleep(1);
-}
+int speed = 100;
 
-void position2(int channel) {
-    setAngle(channel, 180, 100);
-    sleep(1);
+void doMove(int channel)
+{
+    setAngle(channel, 0, speed);
+    setAngle(channel, -90, speed);
+    setAngle(channel, 90, speed);
 }
 
 int main(int argc, char *argv[])
 {
-    if (startUart() != 0)
+    if (argc != 2)
     {
-        return -1;
+        printf("You must pass the serial edvice as argument.\n");
     }
-    // Enable all channels
+
+    if (startUart(argv[1]) != 0)
+    {
+        return 0;
+    }
     enableDisableChannel(0, 1);
-    initChannel(3, 0);
-    position2(2);
-    position1(2);
-    position2(1);
-    position1(1);
+    doMove(1);
     enableDisableChannel(0, 0);
     closeUart();
+    return 0;
 }
-

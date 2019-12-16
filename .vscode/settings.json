@@ -5,6 +5,8 @@
     "files.associations": {
         "wiringpi.h": "c",
         "pigpio.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "controller.h": "c",
+        "uart.h": "c"
     }
 }
