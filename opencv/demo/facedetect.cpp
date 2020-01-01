@@ -10,35 +10,22 @@ using namespace cv;
 #define CANNOT_OPEN_CAMERA -2
 
 void detectAndDraw(Mat &img);
-int initialize(string cascadeName, string nestedCascadeName);
+int initialize(string cascadeName);
 int start();
 
-const static Scalar colors[] = {
-    Scalar(255, 0, 0),
-    Scalar(255, 128, 0),
-    Scalar(255, 255, 0),
-    Scalar(0, 255, 0),
-    Scalar(0, 128, 255),
-    Scalar(0, 255, 255),
-    Scalar(0, 0, 255),
-    Scalar(255, 0, 255)};
-
 VideoCapture capture;
-CascadeClassifier cascade, nestedCascade;
+CascadeClassifier cascade;
 double scale;
 bool tryflip;
 
 int main(int argc, const char **argv)
 {
     string cascadeName;
-    string nestedCascadeName;
 
     cv::CommandLineParser parser(argc, argv,
                                  "{cascade|haarcascade_frontalface_alt.xml|}"
-                                 "{nested-cascade|haarcascade_eye.xml|}"
                                  "{scale|1|}{try-flip||}");
     cascadeName = parser.get<string>("cascade");
-    nestedCascadeName = parser.get<string>("nested-cascade");
     scale = parser.get<double>("scale");
     if (scale < 1)
         scale = 1;
@@ -50,7 +37,7 @@ int main(int argc, const char **argv)
         return 0;
     }
 
-    if (initialize(cascadeName, nestedCascadeName) == 0)
+    if (initialize(cascadeName) == 0)
     {
         start();
     }
@@ -58,11 +45,9 @@ int main(int argc, const char **argv)
     return 0;
 }
 
-int initialize(string cascadeName, string nestedCascadeName)
+int initialize(string cascadeName)
 {
 
-    // This might fail, it's ok
-    nestedCascade.load(nestedCascadeName);
     if (!cascade.load(cascadeName))
     {
         cerr << "Error: Could not load classifier cascade." << endl;
@@ -102,7 +87,7 @@ int start()
 
 void detectAndDraw(Mat &clonedFrame)
 {
-    vector<Rect> faces, faces2;
+    vector<Rect> faces;
     Mat gray, smallImg;
     cvtColor(clonedFrame, gray, COLOR_BGR2GRAY);
     flip(clonedFrame, clonedFrame, 1);
@@ -110,20 +95,17 @@ void detectAndDraw(Mat &clonedFrame)
     resize(gray, smallImg, Size(), fx, fx, INTER_LINEAR);
     equalizeHist(smallImg, smallImg);
     flip(smallImg, smallImg, 1);
-    cascade.detectMultiScale(smallImg, faces,
-                             1.1, 2, 0 | CASCADE_SCALE_IMAGE,
-                             Size(30, 30));
+    cascade.detectMultiScale(smallImg, faces, 1.1, 2, 0 | CASCADE_SCALE_IMAGE, Size(30, 30));
+    Scalar color = Scalar(206, 220, 237);
+    Scalar colorLine = Scalar(100, 100, 237);
 
-    for (size_t i = 0; i < faces.size(); i++)
-    {
-        Rect r = faces[i];
-        Mat smallImgROI;
-        vector<Rect> nestedObjects;
-        Point center;
-        Scalar color = colors[i % 8];
-        rectangle(clonedFrame, cvPoint(cvRound(r.x * scale), cvRound(r.y * scale)),
-                  cvPoint(cvRound((r.x + r.width - 1) * scale), cvRound((r.y + r.height - 1) * scale)),
-                  color, 1, LINE_4, 0);
-    }
+    Rect r = faces[0];
+    CvPoint topLeft = cvPoint(cvRound(r.x * scale), cvRound(r.y * scale));
+    CvPoint widthHeight = cvPoint(cvRound((r.x + r.width - 1) * scale), cvRound((r.y + r.height - 1) * scale));
+    Point faceCenter = Point((widthHeight.x + topLeft.x) / 2, (widthHeight.y + topLeft.y) / 2);
+    Size imageSize = clonedFrame.size();
+    Point imageCenter = Point(imageSize.width / 2, imageSize.height / 2);
+    rectangle(clonedFrame, topLeft, widthHeight, color, 1, LINE_4, 0);
+    line(clonedFrame, faceCenter, imageCenter, colorLine, 2, LINE_4, 0);
     imshow("result", clonedFrame);
 }
