@@ -21,11 +21,11 @@ all: init libs makelibs make
 makelibs: $(EXEC).cpp
 	$(CC) $(CFLAGS) -c ${FACEMOVE}.c -fPIC -pthread -o $(BIN)/shared/${FACEMOVE}.o
 	$(CC) $(CFLAGS) -shared -L. -Wl,-soname,lib${FACEMOVE}.so,-rpath=. -o $(BIN)/shared/lib${FACEMOVE}.so $(BIN)/shared/${FACEMOVE}.o
-	$(CPP) $(CFLAGSPP) $(LIBSPP) -c ${LIBFACE}.cpp -fPIC -pthread -o $(BIN)/shared/${LIBFACE}.o
-	$(CPP) $(CFLAGSPP) $(LIBSPP) -shared -L. -Wl,-soname,lib${LIBFACE}.so,-rpath=. -o $(BIN)/shared/lib${LIBFACE}.so $(BIN)/shared/${LIBFACE}.o
+	$(CPP) -L $(CFLAGSPP) $(LIBSPP) -c ${LIBFACE}.cpp -fPIC -pthread -o $(BIN)/shared/${LIBFACE}.o
+	$(CPP) -L $(CFLAGSPP) $(LIBSPP) -shared -Wl,-soname,lib${LIBFACE}.so,-rpath=. -o $(BIN)/shared/lib${LIBFACE}.so $(BIN)/shared/${LIBFACE}.o
 
 make: $(EXEC).cpp
-	$(CPP) -L$(BIN)/shared $(CFLAGSPP) $(LIBSPP) -l$(FACEMOVE) -l$(LIBFACE) -l$(UART) -l$(CONTROLLER) -o $(BIN)/$(EXEC) $(EXEC).cpp
+	$(CPP) -L $(BIN)/shared $(CFLAGSPP) $(LIBSPP) -l$(FACEMOVE) -l$(LIBFACE) -l$(UART) -l$(CONTROLLER) -o $(BIN)/$(EXEC) $(EXEC).cpp
 
 init:
 	mkdir -p $(BIN)/shared
