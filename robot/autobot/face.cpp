@@ -2,40 +2,13 @@
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include <iostream>
+#include "face.h"
 
 using namespace std;
 using namespace cv;
 
-#define CANNOT_LOAD_CASCADE -1
-#define CANNOT_OPEN_CAMERA -2
-
-void detectAndDraw(Mat &img, double scale);
-int initialize(string cascadeName);
-int start();
-
 VideoCapture capture;
 CascadeClassifier cascade;
-
-int main(int argc, const char **argv)
-{
-    string cascadeName;
-
-    cv::CommandLineParser parser(argc, argv, "{cascade|haarcascade_frontalface_alt.xml|}");
-    cascadeName = parser.get<string>("cascade");
-
-    if (!parser.check())
-    {
-        parser.printErrors();
-        return 0;
-    }
-
-    if (initialize(cascadeName) == 0)
-    {
-        start();
-    }
-
-    return 0;
-}
 
 int initialize(string cascadeName)
 {
@@ -53,31 +26,10 @@ int initialize(string cascadeName)
         return CANNOT_OPEN_CAMERA;
     }
 
-    return 0;
+    return OK;
 }
 
-int start()
-{
-    Mat frame;
-    if (capture.isOpened())
-    {
-        for (;;)
-        {
-            capture >> frame;
-            if (frame.empty())
-                break;
-            Mat clonedFrame = frame.clone();
-            detectAndDraw(clonedFrame, 1.2);
-            char c = (char)waitKey(10);
-            if (c == 27 || c == 'q' || c == 'Q')
-                break;
-        }
-    }
-
-    return 0;
-}
-
-void detectAndDraw(Mat &clonedFrame, double scale)
+bool detectAndDraw(Mat &clonedFrame, double scale, bool (*callback)(int, int))
 {
     vector<Rect> faces;
     Mat gray, smallImg;
@@ -93,15 +45,42 @@ void detectAndDraw(Mat &clonedFrame, double scale)
 
     if (faces.empty())
     {
-        return;
+        return true;
     }
+
     Rect r = faces[0];
     CvPoint topLeft = cvPoint(cvRound(r.x * scale), cvRound(r.y * scale));
     CvPoint widthHeight = cvPoint(cvRound((r.x + r.width - 1) * scale), cvRound((r.y + r.height - 1) * scale));
     Point faceCenter = Point((widthHeight.x + topLeft.x) / 2, (widthHeight.y + topLeft.y) / 2);
     Size imageSize = clonedFrame.size();
     Point imageCenter = Point(imageSize.width / 2, imageSize.height / 2);
-    rectangle(clonedFrame, topLeft, widthHeight, color, 1, LINE_4, 0);
-    line(clonedFrame, faceCenter, imageCenter, colorLine, 2, LINE_4, 0);
-    imshow("result", clonedFrame);
+    int faceIsRight = faceCenter.x - imageCenter.x;
+    int faceIsHigher = faceCenter.y - imageCenter.y;
+    return callback(faceIsRight, faceIsHigher);
+}
+
+int startFaceDetection(string cascadeName, bool (*callback)(int, int))
+{
+    if (initialize(cascadeName) != 0)
+    {
+        return CANNOT_LOAD_CASCADE;
+    }
+
+    Mat frame;
+    if (capture.isOpened())
+    {
+        for (;;)
+        {
+            capture >> frame;
+            if (frame.empty())
+                break;
+            Mat clonedFrame = frame.clone();
+            if (!detectAndDraw(clonedFrame, 1.2, callback))
+            {
+                break;
+            }
+        }
+    }
+
+    return OK;
 }
