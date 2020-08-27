@@ -1,4 +1,4 @@
-CC=gcc 
+CC=arm-linux-gnueabihf-gcc 
 CFLAGS=-Wall -pthread
 INCLUDE=../libs
 CONTROLLER=controller

@@ -1,5 +1,5 @@
 HEADERS = servo.h
-CC=gcc 
+CC=arm-linux-gnueabihf-gcc 
 CFLAGS=-Wall -Wall -pthread
 BIN=./bin
 

@@ -5,11 +5,18 @@
 #include "controller.h"
 
 #define HORIZONTAL 1
+#define HORIZONTAL_MIN -80
+#define HORIZONTAL_MAX 80
 #define VERTICAL 2
+#define VERTICAL_MIN -40
+#define VERTICAL_MAX -10
 #define FACIAL 3
 
-int horizontalAngle = 0,
-    verticalAngle = 0,
+#define ANGLE 10
+
+int angle = 0,
+    horizontalAngle = 0,
+    verticalAngle = -40,
     facialAngle = 0,
     speed = 100;
 
@@ -30,9 +37,9 @@ int prepareSystem(char *serial)
 
     system("stty raw");
     enableDisableChannel(0, 1);
-    setAngle(HORIZONTAL, 0, speed);
-    setAngle(VERTICAL, 0, speed);
-    setAngle(FACIAL, 0, speed);
+    setAngle(HORIZONTAL, horizontalAngle, speed);
+    setAngle(VERTICAL, verticalAngle, speed);
+    setAngle(FACIAL, facialAngle, speed);
     usleep(500000);
     return 1;
 }
@@ -45,23 +52,23 @@ void cleanupSystem()
     system("stty -brkint -imaxbel");
 }
 
-int moveForward(unsigned char channel, int angle)
+int moveForward(unsigned char channel, int angle, int max)
 {
     int newAngle = angle + 5;
-    if (newAngle > 90)
+    if (newAngle > max)
     {
-        newAngle = 90;
+        newAngle = max;
     }
     setAngle(channel, newAngle, speed);
     return newAngle;
 }
 
-int moveBackward(unsigned char channel, int angle)
+int moveBackward(unsigned char channel, int angle, int min)
 {
     int newAngle = angle - 5;
-    if (newAngle < -90)
+    if (newAngle < min)
     {
-        newAngle = -90;
+        newAngle = min;
     }
     setAngle(channel, newAngle, speed);
     return newAngle;
@@ -69,32 +76,32 @@ int moveBackward(unsigned char channel, int angle)
 
 void up()
 {
-    verticalAngle = moveForward(VERTICAL, verticalAngle);
+    verticalAngle = moveForward(VERTICAL, verticalAngle, VERTICAL_MAX);
 }
 
 void down()
 {
-    verticalAngle = moveBackward(VERTICAL, verticalAngle);
+    verticalAngle = moveBackward(VERTICAL, verticalAngle, VERTICAL_MIN);
 }
 
 void left()
 {
-    horizontalAngle = moveForward(HORIZONTAL, horizontalAngle);
+    horizontalAngle = moveForward(HORIZONTAL, horizontalAngle, HORIZONTAL_MAX);
 }
 
 void right()
 {
-    horizontalAngle = moveBackward(HORIZONTAL, horizontalAngle);
+    horizontalAngle = moveBackward(HORIZONTAL, horizontalAngle, HORIZONTAL_MIN);
 }
 
 void tiltLeft()
 {
-    facialAngle = moveForward(FACIAL, facialAngle);
+    facialAngle = moveForward(FACIAL, facialAngle, 40);
 }
 
 void tiltRight()
 {
-    facialAngle = moveBackward(FACIAL, facialAngle);
+    facialAngle = moveBackward(FACIAL, facialAngle, 0);
 }
 
 void processInput()
