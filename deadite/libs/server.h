@@ -1,0 +1,1 @@
+int startServer(int port, int (*callback)(int, int));
