@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-#define READ 3
+#define READ 2
 
 int startServer(int port, int (*callback)(int, int))
 {
@@ -53,7 +53,7 @@ int startServer(int port, int (*callback)(int, int))
     while (read_size > 0 && end == 0)
     {
       read_size = recv(new_socket, input, msg_len, 0);
-      if (read_size == 2 && (input[0] == 'q' || input[0] == 'Q'))
+      if (read_size == 1 && (input[0] == 'q' || input[0] == 'Q'))
       {
         end = 1;
       }

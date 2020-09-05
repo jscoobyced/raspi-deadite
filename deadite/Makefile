@@ -10,6 +10,7 @@ make: clean init subsystems
 subsystems:
 	$(MAKE) -C libs
 	$(MAKE) -C servo
+	$(MAKE) -C head
 
 clean:
 	rm -Rf $(BIN)

@@ -42,7 +42,6 @@ unsigned int setAngle(unsigned char channel, int angle, unsigned char speed)
 
     unsigned int position = (angle + 90) * (MAX_ANGLE - MIN_ANGLE) / 180;
     setPositionWithSpeed(channel, position, speed);
-
     return position;
 }
 

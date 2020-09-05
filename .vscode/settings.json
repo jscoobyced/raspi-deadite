@@ -53,6 +53,8 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "rope": "c"
+        "rope": "c",
+        "shared_mutex": "c",
+        "regex": "c"
     }
 }
