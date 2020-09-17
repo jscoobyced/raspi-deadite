@@ -9,8 +9,9 @@ make: clean init subsystems
 
 subsystems:
 	$(MAKE) -C libs
-	$(MAKE) -C servo
-	$(MAKE) -C head
-
+#	$(MAKE) -C servo
+#	$(MAKE) -C head
+	$(MAKE) -C car
+	$(MAKE) -C bms-ant
 clean:
 	rm -Rf $(BIN)

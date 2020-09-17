@@ -1,12 +1,17 @@
-CC=arm-linux-gnueabihf-gcc 
+CC=gcc
 CFLAGS=-Wall -pthread
 CONTROLLER=controller
 UART=uart
 SERVER=server
 CLIENT=client
+BLUETOOTH=bt
 BIN=../bin
 
-default: make
+default: bt
+
+bt: ${BLUETOOTH}.c
+	gcc $(CFLAGS) -c ${BLUETOOTH}.c -fPIC -pthread -o $(BIN)/shared/${BLUETOOTH}.o
+	gcc $(CFLAGS) -shared -L. -L$(BIN)/shared -lbluetooth -Wl,-soname,lib${BLUETOOTH}.so,-rpath=. -o $(BIN)/shared/lib${BLUETOOTH}.so $(BIN)/shared/${BLUETOOTH}.o
 
 make: ${CONTROLLER}.c ${UART}.c ${SERVER}.c
 	$(CC) $(CFLAGS) -c ${UART}.c -fPIC -pthread -o $(BIN)/shared/${UART}.o
