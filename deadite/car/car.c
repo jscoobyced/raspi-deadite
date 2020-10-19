@@ -1,95 +1,136 @@
+#include <wiringPi.h>
+//#include <softPwm.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/socket.h>
-#include <bluetooth/bluetooth.h>
-#include <bluetooth/hci.h>
-#include <bluetooth/hci_lib.h>
-#include <bluetooth/rfcomm.h>
-#include "bt.h"
 
-#define MLEFT 0
-#define MRIGHT 1
-#define MFORWARD 2
-#define MBACKWARD 3
-#define MBREAK 4
-#define MSTOP 5
-#define MDISCONNECT 6
+#define MOTOR1_IN1 4  // GPIO 23 - PIN 16
+#define MOTOR1_IN2 5  // GPIO 24 - PIN 18
+#define MOTOR1_PWM 1  // Hardware PWM0 - PIN 12
+#define MOTOR2_IN1 27 // GPIO - PIN 36
+#define MOTOR2_IN2 28 // GPIO - PIN 38
+#define MOTOR2_PWM 26 // Hardware PWM0 - PIN 32
 
-static const char TURNRIGHT[] = "#b=2#";
-static const char TURNLEFT[] = "#b=1#";
-static const char FORWARD[] = "#b=3#";
-static const char BACKWARD[] = "#b=4#";
-static const char BREAK[] = "#b=9#";
-static const char STOP[] = "#b=0#";
-static const char DISCONNECT[] = "+DISC";
+#define SPEED_MIN 0      // The minimum speed
+#define SPEED_SLOW 25    // The maximum speed
+#define SPEED_MAX 100   // The maximum speed
 
-int nextCommand(int deviceSocket)
+void updateSpeed(int speed)
 {
-  int input;
-
-  printf("Enter command: ");
-  scanf("%d", &input);
-  switch (input)
-  {
-  case MFORWARD:
-    sendCommand(deviceSocket, FORWARD);
-    break;
-  case MBACKWARD:
-    sendCommand(deviceSocket, BACKWARD);
-    break;
-  case MLEFT:
-    sendCommand(deviceSocket, TURNLEFT);
-    usleep(100000);
-    sendCommand(deviceSocket, BREAK);
-    break;
-  case MRIGHT:
-    sendCommand(deviceSocket, TURNRIGHT);
-    usleep(100000);
-    sendCommand(deviceSocket, BREAK);
-    break;
-  case MBREAK:
-    sendCommand(deviceSocket, BREAK);
-    break;
-  case MSTOP:
-    sendCommand(deviceSocket, STOP);
-    break;
-  default:
-    break;
-  }
-  return input;
+  printf("Speed: %d.\n", speed);
+  pwmWrite(MOTOR1_PWM, speed);
+  //  pwmWrite(MOTOR2_PWM, speed);
+  usleep(100000);
 }
 
-int car()
+void stopMotor()
 {
-  char *address = findDevice("HC05");
-  int deviceSocket = -1;
-
-  if (address != NULL)
-  {
-    printf("Device found at address [%s].\n", address);
-    deviceSocket = connectDevice(address);
-    if (deviceSocket >= 0)
-    {
-      sendCommand(deviceSocket, BREAK);
-    }
-
-    while (nextCommand(deviceSocket) != MSTOP)
-      ;
-
-    write(deviceSocket, DISCONNECT, 5);
-    usleep(50000);
-    disconnect(deviceSocket);
-  }
-  else
-  {
-    puts("Device not found.");
-  }
-  free(address);
-  return 0;
+  updateSpeed(0);
+  digitalWrite(MOTOR1_IN1, LOW);
+  digitalWrite(MOTOR1_IN2, LOW);
+  digitalWrite(MOTOR2_IN1, LOW);
+  digitalWrite(MOTOR2_IN2, LOW);
+  usleep(100000);
 }
 
-int main(int argc, char **argv)
+void setup()
 {
-  car();
+  // Use wiringPi PIN numbers
+  wiringPiSetup();
+
+  // Setup hardware PWM
+  pinMode(MOTOR1_PWM, PWM_OUTPUT);
+  pinMode(MOTOR2_PWM, PWM_OUTPUT);
+
+  // Setup all GPIOs as output
+  pinMode(MOTOR1_IN1, OUTPUT);
+  pinMode(MOTOR1_IN2, OUTPUT);
+  pinMode(MOTOR2_IN1, OUTPUT);
+  pinMode(MOTOR2_IN2, OUTPUT);
+
+  // Set the mode to mark:space
+  pwmSetMode(PWM_MODE_MS);
+  // Set the clock divisor and range
+  // This gives a PWM frequency of 200 Hz
+  // 19.2e6 / pwmClock / pwmRange
+  pwmSetClock(1920);
+  pwmSetRange(50);
+
+  // Start all at low level, medium speed
+  stopMotor();
+
+  // Set some delay to ensure all is set
+  usleep(100000);
+}
+
+void forward()
+{
+  digitalWrite(MOTOR1_IN1, LOW);
+  digitalWrite(MOTOR1_IN2, HIGH);
+  digitalWrite(MOTOR2_IN1, HIGH);
+  digitalWrite(MOTOR2_IN2, LOW);
+  usleep(100000);
+}
+
+void backward()
+{
+  digitalWrite(MOTOR1_IN1, HIGH);
+  digitalWrite(MOTOR1_IN2, LOW);
+  digitalWrite(MOTOR2_IN1, LOW);
+  digitalWrite(MOTOR2_IN2, HIGH);
+  usleep(100000);
+}
+
+void left()
+{
+  digitalWrite(MOTOR1_IN1, HIGH);
+  digitalWrite(MOTOR1_IN2, LOW);
+  digitalWrite(MOTOR2_IN1, HIGH);
+  digitalWrite(MOTOR2_IN2, LOW);
+  usleep(100000);
+}
+
+void right()
+{
+  digitalWrite(MOTOR1_IN1, LOW);
+  digitalWrite(MOTOR1_IN2, HIGH);
+  digitalWrite(MOTOR2_IN1, LOW);
+  digitalWrite(MOTOR2_IN2, HIGH);
+  usleep(100000);
+}
+
+void fast()
+{
+  updateSpeed(SPEED_MAX);
+}
+
+void slow()
+{
+  updateSpeed(SPEED_SLOW);
+}
+
+void cleanup()
+{
+  stopMotor();
+  pinMode(MOTOR1_PWM, INPUT);
+  pinMode(MOTOR2_PWM, INPUT);
+  pinMode(MOTOR1_IN1, INPUT);
+  pinMode(MOTOR1_IN2, INPUT);
+  pinMode(MOTOR2_IN1, INPUT);
+  pinMode(MOTOR2_IN2, INPUT);
+}
+
+int main()
+{
+  printf("Starting.\n");
+  setup();
+  printf("Started.\n");
+  forward();
+  fast();
+  usleep(5000000);
+  slow();
+  usleep(5000000);
+  printf("Stopping.\n");
+  cleanup();
+  printf("Stopped.\n");
 }
