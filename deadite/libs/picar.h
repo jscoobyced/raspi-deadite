@@ -10,8 +10,8 @@
 #define SPEED_MAX 100   // The maximum speed
 
 #define SLEEP_SHORT 50000     // 50ms sleep
-#define SLEEP_MEDIUM 100000   // 100ms sleep
-#define SLEEP_LONG 1000000    // 1s sleep
+#define SLEEP_MEDIUM 1000000   // 1s sleep
+#define SLEEP_LONG 2000000    // 2s sleep
 
 /*
  * Update the speed by changing the duty cycle of the PWM

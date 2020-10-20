@@ -2,21 +2,6 @@
 #include <unistd.h>
 #include "picar.h"
 
-#define MOTOR1_IN1 4  // GPIO 23 - PIN 16
-#define MOTOR1_IN2 5  // GPIO 24 - PIN 18
-#define MOTOR1_PWM 1  // Hardware PWM0 - PIN 12
-#define MOTOR2_IN1 27 // GPIO - PIN 36
-#define MOTOR2_IN2 28 // GPIO - PIN 38
-#define MOTOR2_PWM 26 // Hardware PWM0 - PIN 32
-
-#define SPEED_MIN 0     // The minimum speed
-#define SPEED_SLOW 25   // The maximum speed
-#define SPEED_MAX 100   // The maximum speed
-
-#define SLEEP_SHORT 50000     // 50ms sleep
-#define SLEEP_MEDIUM 100000   // 100ms sleep
-#define SLEEP_LONG 1000000    // 1s sleep
-
 void updateSpeed(int speed)
 {
   pwmWrite(MOTOR1_PWM, speed);

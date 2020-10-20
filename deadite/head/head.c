@@ -1,34 +1,112 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include "client.h"
+#include "uart.h"
+#include "controller.h"
 
-#define PORT 8080
-#define CONTINUE 0
-#define STOP 1
+#define HORIZONTAL 1
+#define HORIZONTAL_MIN -70
+#define HORIZONTAL_MAX 70
+#define VERTICAL 2
+#define VERTICAL_MIN -70
+#define VERTICAL_MAX 70
 
-int nextCommand()
+#define ANGLE 10
+
+int horizontalAngle = 0,
+    verticalAngle = 0,
+    speed = 50;
+
+int prepareSystem(char *serial)
 {
-  char input[2];
-
-  scanf("%s", input);
-  if (strncmp(input, "q", 1) == 0)
+  if (startUart(serial) != 0)
   {
-    sendCommand("q");
-    return STOP;
+    return 0;
   }
-  printf("Command: %s", input);
-  sendCommand(input);
-  return CONTINUE;
+
+  enableDisableChannel(0, 1);
+  setAngle(HORIZONTAL, horizontalAngle, speed);
+  setAngle(VERTICAL, verticalAngle, speed);
+  usleep(500000);
+  return 1;
 }
 
-int main(int argc, char const *argv[])
+void cleanupSystem()
 {
-  connectToServer("192.168.1.21", PORT);
-  while (nextCommand() == CONTINUE)
+  setAngle(HORIZONTAL, 0, speed);
+  setAngle(VERTICAL, 0, speed);
+  usleep(1000000);
+  enableDisableChannel(0, 0);
+  closeUart();
+}
+
+int moveForward(unsigned char channel, int angle, int max)
+{
+  int newAngle = angle + ANGLE;
+  if (newAngle > max)
   {
-    usleep(50000);
+    newAngle = max;
+  }
+  setAngle(channel, newAngle, speed);
+  usleep(500000);
+  return newAngle;
+}
+
+int moveBackward(unsigned char channel, int angle, int min)
+{
+  int newAngle = angle - ANGLE;
+  if (newAngle < min)
+  {
+    newAngle = min;
+  }
+  setAngle(channel, newAngle, speed);
+  usleep(500000);
+  return newAngle;
+}
+
+void up()
+{
+  verticalAngle = moveForward(VERTICAL, verticalAngle, VERTICAL_MAX);
+}
+
+void down()
+{
+  verticalAngle = moveBackward(VERTICAL, verticalAngle, VERTICAL_MIN);
+}
+
+void left()
+{
+  horizontalAngle = moveForward(HORIZONTAL, horizontalAngle, HORIZONTAL_MAX);
+}
+
+void right()
+{
+  horizontalAngle = moveBackward(HORIZONTAL, horizontalAngle, HORIZONTAL_MIN);
+}
+
+int main(int argc, char *argv[])
+{
+  if (argc != 2 || prepareSystem(argv[1]) == 0)
+  {
+    puts("Bad parameters.\n");
+    return 0;
   }
 
-  disconnectFromServer();
+  puts("Connected to the head.");
+
+  left();
+  left();
+  up();
+  up();
+  right();
+  right();
+  right();
+  right();
+  down();
+  down();
+  left();
+  left();
+
+  cleanupSystem();
+  return 0;
 }

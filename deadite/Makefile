@@ -9,8 +9,7 @@ make: clean init subsystems
 
 subsystems:
 	$(MAKE) -C libs
-#	$(MAKE) -C servo
-#	$(MAKE) -C head
+	$(MAKE) -C head
 	$(MAKE) -C car
 clean:
 	rm -Rf $(BIN)
