@@ -1,6 +1,6 @@
 #include <wiringPi.h>
 #include <unistd.h>
-#include "picar.h"
+#include "l298n.h"
 
 void updateSpeed(int speed)
 {
